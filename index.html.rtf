@@ -1,0 +1,164 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2639
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 <!DOCTYPE html>\
+<html lang="en">\
+<head>\
+  <meta charset="UTF-8">\
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">\
+  <title>Custom SIS</title>\
+\
+  <!-- Fonts -->\
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">\
+\
+  <style>\
+    * \{ box-sizing: border-box; margin:0; padding:0; \}\
+    body \{ font-family:'Poppins',sans-serif; background:#ab3136; display:flex; justify-content:center; align-items:center; min-height:100vh; \}\
+\
+    .card \{ background:#fff; padding:30px; border-radius:10px; width:400px; box-shadow:0 10px 25px rgba(0,0,0,.25); \}\
+    h1,h2,h3 \{ font-family:'Oswald',sans-serif; color:#ab3136; margin-bottom:20px; \}\
+    input,button \{ width:100%; padding:12px; margin:8px 0; font-size:16px; border-radius:5px; border:1px solid #ab3136; \}\
+    button \{ background:#ab3136; color:#fff; border:none; cursor:pointer; transition:0.3s; \}\
+    button:hover \{ background:#8b2529; \}\
+    .logout \{ background:#444; margin-top:15px; \}\
+\
+    table \{ width:100%; border-collapse:collapse; margin-top:15px; \}\
+    th,td \{ padding:10px; border-bottom:1px solid #ddd; text-align:left; \}\
+    th \{ background:#f4f4f4; \}\
+    .hidden \{ display:none; \}\
+    .small \{ font-size:14px; color:#555; \}\
+  </style>\
+</head>\
+<body>\
+\
+<div class="card" id="login">\
+  <h1>Login</h1>\
+  <input id="loginId" placeholder="Student ID or Email">\
+  <input id="loginPass" type="password" placeholder="Password">\
+  <button onclick="login()">Login</button>\
+  <p class="small">Student ID for students \'95 Email for teachers</p>\
+</div>\
+\
+<div class="card hidden" id="studentDash">\
+  <h2>Student Dashboard</h2>\
+  <div id="studentInfo"></div>\
+\
+  <h3>Grades</h3>\
+  <table id="gradesTable"></table>\
+\
+  <button class="logout" onclick="logout()">Logout</button>\
+</div>\
+\
+<div class="card hidden" id="teacherDash">\
+  <h2>Teacher Dashboard</h2>\
+\
+  <h3>Students</h3>\
+  <table>\
+    <thead>\
+      <tr>\
+        <th>ID</th>\
+        <th>Name</th>\
+        <th>Grade</th>\
+        <th>Action</th>\
+      </tr>\
+    </thead>\
+    <tbody id="studentList"></tbody>\
+  </table>\
+\
+  <div id="teacherView" class="hidden"></div>\
+\
+  <button class="logout" onclick="logout()">Logout</button>\
+</div>\
+\
+<script>\
+/* ===== DATABASE ===== */\
+const students = \{\
+  "1001": \{ password:"studentpass", name:"Alex Carter", gradeLevel:"10", gpa:"3.6", grades:\{Math:"A", English:"B+", Science:"A-", History:"B"\} \},\
+  "1002": \{ password:"math123", name:"Jamie Lee", gradeLevel:"11", gpa:"3.9", grades:\{Math:"A+", English:"A", Science:"A", History:"A-"\} \}\
+\};\
+\
+const teachers = \{\
+  "teacher@school.edu": \{ password:"teachpass" \},\
+  "admin@school.edu": \{ password:"admin123" \}\
+\};\
+\
+/* ===== LOGIN ===== */\
+function login() \{\
+  const id = document.getElementById('loginId').value.trim();\
+  const pass = document.getElementById('loginPass').value;\
+\
+  if(students[id] && students[id].password===pass)\{ showStudent(id); return; \}\
+  if(teachers[id] && teachers[id].password===pass)\{ showTeacher(); return; \}\
+\
+  alert("Invalid credentials");\
+\}\
+\
+/* ===== STUDENT DASHBOARD ===== */\
+function showStudent(id)\{\
+  document.getElementById('login').classList.add('hidden');\
+  document.getElementById('studentDash').classList.remove('hidden');\
+\
+  const s = students[id];\
+  document.getElementById('studentInfo').innerHTML=`\
+    <p><strong>Name:</strong> $\{s.name\}</p>\
+    <p><strong>ID:</strong> $\{id\}</p>\
+    <p><strong>Grade Level:</strong> $\{s.gradeLevel\}</p>\
+    <p><strong>GPA:</strong> $\{s.gpa\}</p>\
+  `;\
+\
+  let rows="<tr><th>Course</th><th>Grade</th></tr>";\
+  for(let c in s.grades) rows+=`<tr><td>$\{c\}</td><td>$\{s.grades[c]\}</td></tr>`;\
+  document.getElementById('gradesTable').innerHTML=rows;\
+\}\
+\
+/* ===== TEACHER DASHBOARD ===== */\
+function showTeacher()\{\
+  document.getElementById('login').classList.add('hidden');\
+  document.getElementById('teacherDash').classList.remove('hidden');\
+\
+  const list = document.getElementById('studentList');\
+  list.innerHTML="";\
+\
+  for(let id in students)\{\
+    const s=students[id];\
+    list.innerHTML+=`\
+      <tr>\
+        <td>$\{id\}</td>\
+        <td>$\{s.name\}</td>\
+        <td>$\{s.gradeLevel\}</td>\
+        <td><button onclick="viewStudent('$\{id\}')">View</button></td>\
+      </tr>\
+    `;\
+  \}\
+\}\
+\
+function viewStudent(id)\{\
+  const s=students[id];\
+  let gradeRows="";\
+  for(let c in s.grades) gradeRows+=`<tr><td>$\{c\}</td><td>$\{s.grades[c]\}</td></tr>`;\
+\
+  const view = document.getElementById('teacherView');\
+  view.classList.remove('hidden');\
+  view.innerHTML=`\
+    <h3>Student Profile</h3>\
+    <p><strong>Name:</strong> $\{s.name\}</p>\
+    <p><strong>ID:</strong> $\{id\}</p>\
+    <p><strong>GPA:</strong> $\{s.gpa\}</p>\
+    <table>\
+      <tr><th>Course</th><th>Grade</th></tr>\
+      $\{gradeRows\}\
+    </table>\
+  `;\
+\}\
+\
+/* ===== LOGOUT ===== */\
+function logout()\{ location.reload(); \}\
+</script>\
+\
+</body>\
+</html>\
+}
